@@ -1,0 +1,115 @@
+<script type="text/javascript">
+	RED.nodes.registerType('wio-ledbar', {
+		paletteLabel: 'ledbar',
+		category: 'wio',
+		color: '#C0EDC0',
+		defaults: {
+			name: { value: '' },
+			connection: { type: 'wio-config' },
+			node: { value: '' },
+			port: { value: '' },
+			mode: { value: 'ledbrightness' },
+			led: { value: 1 },
+			brightness: { value: 1 },
+			level: { value: 0 },
+			orient: { value: 0 },
+      bitconfig: { value: 0 }
+		},
+		inputs: 1,
+		outputs: 1,
+		icon: 'light.png',
+		label: function () {
+			return this.name || 'ledbar';
+		},
+		oneditprepare: function () {
+			var config = this;
+			var skus = {
+				'104020006': {
+					name: 'Grove LED Bar',
+					module: 'GroveLEDBar'
+				}
+			};
+			$.getScript('wio-common').done(function (res) {
+				WioCommon(config, skus);
+
+				var mode = $('#node-input-mode');
+				var ledRow = $('.node-input-led-row');
+				var brightnessRow = $('.node-input-brightness-row');
+				var displayRow = $('.node-input-level-row');
+				var orientationRow = $('.node-input-orient-row');
+        var bitconfigRow = $('.node-input-bitconfig-row');
+
+				mode.on('change', function () {
+					var value = mode.val();
+					ledRow.toggle((value == 'ledbrightness') || (value == 'singleled'));
+					brightnessRow.toggle((value != 'singleled') &&
+						(value != 'displaylevel') && (value != 'orientation') &&
+						(value != 'bitconfig') && (value != 'bitstates'));
+					displayRow.toggle((value != 'singleled') &&
+						(value != 'ledbrightness') && (value != 'orientation') &&
+						(value != 'bitconfig') && (value != 'bitstates'));
+					orientationRow.toggle((value != 'singleled') &&
+						(value != 'ledbrightness') && (value != 'displaylevel') &&
+						(value != 'bitconfig') && (value != 'bitstates'));
+          bitconfigRow.toggle((value != 'singleled') &&
+            (value != 'ledbrightness') && (value != 'displaylevel') &&
+            (value != 'orientation') && (value != 'bitstates'));
+				}).trigger('change');
+			});
+		}
+});
+</script>
+
+<script type="text/x-red" data-template-name="wio-ledbar">
+	<div class="form-row">
+		<label for="node-input-name"><i class="icon-tag"></i> Name</label>
+		<input type="text" id="node-input-name" placeholder="Name">
+	</div>
+	<div class="form-row">
+		<label for="node-input-connection"><i class="icon-tag"></i> Connection</label>
+		<select type="text" id="node-input-connection"></select>
+	</div>
+	<div class="form-row">
+		<label for="node-input-node"><i class="icon-tag"></i> Node</label>
+		<select type="text" id="node-input-node"></select>
+	</div>
+	<div class="form-row">
+		<label for="node-input-port"><i class="icon-tag"></i> Port</label>
+		<select type="text" id="node-input-port"></select>
+	</div>
+	<div class="form-row">
+		<label for="node-input-mode"><i class="icon-tag"></i> Mode</label>
+		<select type="text" id="node-input-mode">
+			<option value="ledbrightness">Set Single LED Brightness</option>
+			<option value="singleled">Single LED ON OFF</option>
+			<option value="displaylevel">Display Level</option>
+			<option value="orientation">Orientation</option>
+      <option value="bitconfig">Bit Config</option>
+			<option value="bitstates">Bit State</option>
+		</select>
+	</div>
+	<div class="form-row node-input-led-row">
+		<label for="node-input-led"><i class="icon-tag"></i> LED</label>
+		<input type="number" id="node-input-led" min="1" max="10" step="1" placeholder="LED">
+	</div>
+	<div class="form-row node-input-brightness-row">
+		<label for="node-input-brightness"><i class="icon-tag"></i> Brightness</label>
+		<input type="number" id="node-input-brightness" min="0" max="1" step="0.1" placeholder="Brightness">
+	</div>
+	<div class="form-row node-input-level-row">
+		<label for="node-input-level"><i class="icon-tag"></i> Level</label>
+		<input type="number" id="node-input-level" min="0" max="10" step="0.5" placeholder="Level">
+	</div>
+	<div class="form-row node-input-orient-row">
+		<label for="node-input-orient"><i class="icon-tag"></i> Orientation</label>
+		<input type="number" id="node-input-orient" min="0" max="1" step="1" placeholder="Orientation">
+	</div>
+  <div class="form-row node-input-bitconfig-row">
+    <label for="node-input-bitconfig"><i class="icon-tag"></i> Bit Config</label>
+    <input type="pattern" id="node-input-bitconfig" (0|1|2|3|4|7|8|15|16|31|32|63|64|127|128|255|256|511|512|1023) placeholder="Bit Config">
+  </div>
+</script>
+
+<script type="text/x-red" data-help-name="wio-ledbar">
+	<p>Wio LED Bar</p>
+</script>

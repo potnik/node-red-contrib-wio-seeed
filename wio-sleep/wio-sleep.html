@@ -1,0 +1,55 @@
+<script type="text/javascript">
+  RED.nodes.registerType('wio-sleep', {
+    paletteLabel: 'sleep',
+    category: 'wio',
+    color: '#C0EDC0',
+    defaults: {
+      name: { value: '' },
+      connection: { type: 'wio-config' },
+      node: { value: '' },
+      sleep: { value: 0 }
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: 'timer.png',
+    label: function () {
+      return this.name || 'sleep';
+    },
+    oneditprepare: function () {
+      var config = this;
+      var skus = {
+        '102110037': {
+          name: 'Wio Link',
+          module: 'WioLink'
+        },
+      };
+      $.getScript('wio-common').done(function (res) {
+        WioCommon(config, skus);
+        //var sleepRow = $('.node-input-sleep-row');
+      });
+    }
+  });
+</script>
+
+<script type="text/x-red" data-template-name="wio-sleep">
+  <div class="form-row">
+    <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-connection"><i class="icon-tag"></i> Connection</label>
+    <select type="text" id="node-input-connection"></select>
+  </div>
+  <div class="form-row">
+    <label for="node-input-node"><i class="icon-tag"></i> Node</label>
+    <select type="text" id="node-input-node"></select>
+  </div>
+  <div class="form-row node-input-sleep-row">
+    <label for="node-input-sleep"><i class="icon-tag"></i> Seconds</label>
+    <input type="number" id="node-input-sleep" min="0" step="1" placeholder="Seconds">
+  </div>
+</script>
+
+<script type="text/x-red" data-help-name="wio-sleep">
+  <p>Wio Node Sleep</p>
+</script>
