@@ -1,101 +1,115 @@
-﻿<script type="text/javascript">
-	RED.nodes.registerType('wio-config', {
-		category: 'config',
-		credentials: {
-			server: { type: 'text' },
-			token: { type: 'text' }
-		},
-		label: 'wio config',
-		oneditprepare: function () {
-			console.log(this);
-			var config = this;
-			var server = $('#node-input-server');
-			var email = $('#node-input-email');
-			var password = $('#node-input-password');
-			var token = $('#node-input-token');
-			var errornotification = null;
+<script type="text/javascript">
+  RED.nodes.registerType('wio-config', {
+    category: 'config',
+    credentials: {
+      server: {
+        type: 'text'
+      },
+      token: {
+        type: 'text'
+      }
+    },
+    label: 'wio config',
+    oneditprepare: function() {
+      console.log(this);
+      var config = this;
+      var loginserver = $('#node-login-server');
+      var server = $('#node-input-server');
+      var email = $('#node-input-email');
+      var password = $('#node-input-password');
+      var token = $('#node-input-token');
+      var errornotification = null;
 
-			server.val(((config.credentials.server) ? config.credentials.server : 'us.wio.seeed.io'));
-			token.val(((config.credentials.token) ? config.credentials.token : ''));
-			toggleLoginOrTokenInput((!config.credentials.token));
+      loginserver.val(((config.credentials.loginserver) ? config.credentials.loginserver : 'wio.seeed.io'));
+      server.val(((config.credentials.server) ? config.credentials.server : 'us.wio.seeed.io'));
+      token.val(((config.credentials.token) ? config.credentials.token : ''));
+      toggleLoginOrTokenInput((!config.credentials.token));
 
-			$('#node-input-login-button').on('click', function () {
-				getAuthorizationToken();
-			});
+      $('#node-input-login-button').on('click', function() {
+        getAuthorizationToken();
+      });
 
-			$('#node-input-manual-token-button').on('click', function () {
-				toggleLoginOrTokenInput(false);
-			});
+      $('#node-input-manual-token-button').on('click', function() {
+        toggleLoginOrTokenInput(false);
+      });
 
-			$('#node-input-enter-login-button').on('click', function () {
-				toggleLoginOrTokenInput(true);
-			});
+      $('#node-input-enter-login-button').on('click', function() {
+        toggleLoginOrTokenInput(true);
+      });
 
-			function toggleLoginOrTokenInput(showLogin) {
-				$('.node-input-login-row').toggle(showLogin);
-				$('.node-input-token-row').toggle(!showLogin);
-			}
+      function toggleLoginOrTokenInput(showLogin) {
+        $('.node-input-login-row').toggle(showLogin);
+        $('.node-input-token-row').toggle(!showLogin);
+      }
 
-			function getAuthorizationToken() {
-				if (errornotification)
-					errornotification.close();
+      function getAuthorizationToken() {
+        if (errornotification)
+          errornotification.close();
 
-				if ((email.val()) && (password.val())) {
-					$.ajax({
-						url: 'https://' + server.val() + '/v1/user/login',
-						data: {
-							email: email.val(),
-							password: password.val()
-						},
-						method: 'POST',
-						success: function (res) {
-							if (res.token) {
-								token.val(res.token);
-								RED.notify('Login success!', 'success');
-								$('#node-config-dialog-ok').trigger('click');
-							} else {
-								errorNotification = RED.notify((('error' in res) ? response.error : 'Unknown error'), 'error');
-							}
-						},
-						error: function (xhr) {
-							var response = JSON.parse(xhr.responseText);
-							errorNotification = RED.notify((('error' in response) ? response.error : 'Unknown error'), 'error');
-						}
-					});
-				}
-			}
-		},
-		oneditsave: function () {
-			var config = this;
+        if ((email.val()) && (password.val())) {
+          $.ajax({
+            url: 'https://' + loginserver.val() + '/login',
+            data: {
+              email: email.val(),
+              password: password.val()
+            },
+            method: 'POST',
+            success: function(res) {
+              res = res.split('\n');
+              res = res[1];
+              res = res.split(':');
+              if (res[0] === 'token') {
+                res = res[1];
+                token.val(res);
+                RED.notify('Login success!', 'success');
+                $('#node-config-dialog-ok').trigger('click');
+              } else {
+                errorNotification = RED.notify((('error' in res) ? response.error : 'Unknown error'), 'error');
+              }
+            },
+            error: function(xhr) {
+              var response = JSON.parse(xhr.responseText);
+              errorNotification = RED.notify((('error' in response) ? response.error : 'Unknown error'), 'error');
+            }
+          });
+        }
+      }
+    },
+    oneditsave: function() {
+      var config = this;
 
-			$.post('wio-config/' + config.id + '/auth', {
-				server: $('#node-input-server').val(),
-				token: $('#node-input-token').val()
-			});
-		}
-	});
+      $.post('wio-config/' + config.id + '/auth', {
+        server: $('#node-input-server').val(),
+        token: $('#node-input-token').val()
+      });
+    }
+  });
 </script>
 
 <script type="text/x-red" data-template-name="wio-config">
-	<div class="form-row">
-		<label for="node-input-server"><i class="icon-tag"></i> Server</label>
-		<input type="text" id="node-input-server" placeholder="Server">
-	</div>
-	<div class="form-row node-input-login-row">
-		<label for="node-input-email"><i class="icon-tag"></i> Email</label>
-		<input type="text" id="node-input-email" placeholder="Email">
-	</div>
-	<div class="form-row node-input-login-row">
-		<label for="node-input-password"><i class="icon-tag"></i> Password</label>
-		<input type="password" id="node-input-password" placeholder="Password">
-	</div>
-	<div class="form-row node-input-login-row">
-		<a href="#" class="editor-button" id="node-input-login-button" style="margin-top: 4px;"><i class="fa fa-lock"></i> Login</a>
-		<a href="#" class="editor-button" id="node-input-manual-token-button" style="margin-top: 4px;"><i class="fa fa-pencil"></i> Manual Token</a>
-	</div>
-	<div class="form-row node-input-token-row">
-		<label for="node-input-token"><i class="icon-tag"></i> Token</label>
-		<input type="text" id="node-input-token" style="width: 60%;" placeholder="Token">
-		<a href="#" class="editor-button" id="node-input-enter-login-button" style="margin-top: 4px;"><i class="fa fa-lock"></i></a>
-	</div>
+  <div class="form-row">
+    <label for="node-input-server"><i class="icon-tag"></i> API Server</label>
+    <input type="text" id="node-input-server" placeholder="Config Server">
+  </div>
+  <div class="form-row node-input-login-row">
+    <label for="node-login-server"><i class="icon-tag"></i> Server</label>
+    <input type="text" id="node-login-server" placeholder="Login Server">
+  </div>
+  <div class="form-row node-input-login-row">
+    <label for="node-input-email"><i class="icon-tag"></i> Email</label>
+    <input type="text" id="node-input-email" placeholder="Email">
+  </div>
+  <div class="form-row node-input-login-row">
+    <label for="node-input-password"><i class="icon-tag"></i> Password</label>
+    <input type="password" id="node-input-password" placeholder="Password">
+  </div>
+  <div class="form-row node-input-login-row">
+    <a href="#" class="editor-button" id="node-input-login-button" style="margin-top: 4px;"><i class="fa fa-lock"></i> Login</a>
+    <a href="#" class="editor-button" id="node-input-manual-token-button" style="margin-top: 4px;"><i class="fa fa-pencil"></i> Manual Token</a>
+  </div>
+  <div class="form-row node-input-token-row">
+    <label for="node-input-token"><i class="icon-tag"></i> Token</label>
+    <input type="text" id="node-input-token" style="width: 60%;" placeholder="Token">
+    <a href="#" class="editor-button" id="node-input-enter-login-button" style="margin-top: 4px;"><i class="fa fa-lock"></i></a>
+  </div>
 </script>
