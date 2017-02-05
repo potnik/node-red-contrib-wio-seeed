@@ -9,8 +9,9 @@ module.exports = function (RED) {
     if (node.connection) {
       this.on('input', function (msg) {
         var hexColors = [];
-        var count = Math.min(((config.mode == 'auto') ? msg.payload : config.count), config.count);
-        var colors = config.colors.split(',');
+        var count = Math.min(((msg.payload.count) ? msg.payload.count : config.count), config.count);
+        var colors = (msg.payload.colors ? msg.payload.colors.split(',') : config.colors.split(','));
+        var pos = (parseInt(msg.payload.pos) ? parseInt(msg.payload.pos) : config.pos);
 
         var payloadint = (parseInt(msg.payload) ? parseInt(msg.payload) : 0);
         var request = '';
@@ -23,10 +24,10 @@ module.exports = function (RED) {
           hexColors.push('000000');
 
         if (config.mode === 'clear') {
-          request = 'clear/' + config.count + '/' + colors[1] + '/';
+          request = 'clear/' + config.count + '/' + colors[0] + '/';
           // ((payloadint === 0) ? parseInt(config.led) : payloadint);
         } else if (config.mode === 'segment') {
-          request = 'segment/' + config.pos + '/' + hexColors.join('') + '/ ';
+          request = 'segment/' + pos + '/' + hexColors.join('') + '/';
         } else if (config.mode === 'rainbowon'){
           request = 'start_rainbow_flow/' + parseInt(config.count ) + '/' + parseInt(config.brightness) + '/' + parseInt(config.speed) +'/';
         } else if (config.mode === 'rainbowoff'){
